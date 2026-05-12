@@ -188,7 +188,7 @@ export default function PostPage() {
 
   const shareOnTwitter = () => {
     const url = window.location.href;
-    const text = post ? `${post.title} | Ink.` : 'Check out this story on Ink.';
+    const text = post ? `${post.title} | INK.` : 'Check out this story on INK.';
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
   };
 
@@ -413,7 +413,7 @@ export default function PostPage() {
       <aside className="bg-[#f1f1f1]/30 py-32 border-t border-black/5">
          <div className="max-w-7xl mx-auto px-4">
             <div className="flex items-center justify-between mb-16">
-               <h3 className="font-serif text-3xl font-medium">Continue reading from Ink & Insight</h3>
+               <h3 className="font-serif text-3xl font-medium">Continue reading from INK</h3>
                <Link to="/blog" className="flex items-center space-x-2 text-sm font-bold uppercase tracking-widest group">
                   <span>Explore archive</span>
                   <ChevronRight size={16} className="transition-transform group-hover:translate-x-1" />
