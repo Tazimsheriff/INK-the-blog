@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Helmet } from 'react-helmet-async';
+import { SEO } from '../components/SEO';
 import { Navbar, Footer } from '../components/Navigation';
 import { PostCard, Newsletter } from '../components/BlogComponents';
 import { Post } from '../types';
@@ -132,12 +132,11 @@ export default function BlogListingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Helmet>
-        <title>Stories — Personal Blog</title>
-        <meta name="description" content="Explore a collection of stories on lifestyle, design, and technology." />
-        <meta property="og:title" content="Stories — Personal Blog" />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SEO 
+        title="Stories" 
+        description="Explore a collection of stories on lifestyle, design, and technology."
+        url="https://blog.tazimsheriff.dev/blog"
+      />
       
       <Navbar />
 

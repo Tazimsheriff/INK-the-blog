@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { SEO } from '../components/SEO';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { Post } from '../types';
@@ -138,6 +139,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen">
+      <SEO />
       <Navbar />
       
       {/* Hero Section */}
@@ -150,7 +152,7 @@ export default function LandingPage() {
             className="flex flex-col"
           >
             <div className="mb-8 flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-[#F27D26]">
-              <span className="px-2 py-0.5 border border-[#F27D26]">INK. Featured Selection</span>
+              <span className="px-2 py-0.5 border border-[#F27D26]">Tazim Sheriff Blog Selection</span>
               <span className="text-black/40">•</span>
               <span className="text-black/60">Issue #12 • Spring 2026</span>
             </div>
@@ -226,7 +228,7 @@ export default function LandingPage() {
             <div className="mt-16 bg-white p-10 rounded-2xl border border-black/5">
               <h3 className="font-serif text-2xl font-medium mb-4 italic">Write with us.</h3>
               <p className="text-black/60 text-sm mb-8 leading-relaxed">
-                INK is a community-driven publication. We're always looking for new voices to join our circle of writers.
+                Tazim Sheriff Blog is a community-driven publication. We're always looking for new voices to join our circle of writers.
               </p>
               <button className="w-full py-4 border border-black font-bold uppercase tracking-widest text-xs hover:bg-black hover:text-white transition-all rounded-full">
                 Apply as Author

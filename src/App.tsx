@@ -13,6 +13,8 @@ import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import QuotesPage from './pages/QuotesPage';
 
+import { SEO } from './components/SEO';
+
 import { useAppStore } from './store/useAppStore';
 
 export default function App() {
@@ -50,13 +52,14 @@ export default function App() {
   }, [setUser, setAuthLoading]);
 
   if (isAuthLoading) return (
-    <div className="min-h-screen flex items-center justify-center font-serif italic text-black/20">
+    <div className="min-h-screen flex items-center justify-center font-serif italic text-black/40">
       Authenticating...
     </div>
   );
 
   return (
     <BrowserRouter>
+      <SEO />
       <Toaster position="bottom-right" />
       <Routes>
         <Route path="/" element={<LandingPage />} />

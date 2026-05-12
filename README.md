@@ -1,4 +1,4 @@
-# INK - Modern Blogging Platform
+# Tazim Sheriff Blog - Modern Blogging Platform
 
 A premium, full-stack personal blogging platform inspired by Medium and Substack.
 

@@ -218,7 +218,7 @@ export default function AdminDashboard() {
       <aside className="w-72 border-r border-black/5 bg-white flex flex-col h-screen sticky top-0 overflow-hidden">
         <div className="p-8 border-b border-black/5">
           <Link to="/" className="flex items-center space-x-1">
-            <span className="font-serif text-2xl font-black tracking-tighter uppercase text-primary">INK.</span>
+            <span className="font-serif text-2xl font-black tracking-tighter uppercase text-primary">Tazim Sheriff Blog</span>
           </Link>
         </div>
 
@@ -271,7 +271,7 @@ export default function AdminDashboard() {
         {/* Header */}
         <header className="h-24 glass border-b border-black/5 flex items-center justify-between px-12 sticky top-0 z-40">
            <div className="flex items-center space-x-2 text-[10px] font-bold uppercase tracking-widest text-black/40">
-              <span>INK</span>
+              <span>Tazim Sheriff Blog</span>
               <ChevronRight size={12} />
               <span className="text-black">Dashboard</span>
            </div>

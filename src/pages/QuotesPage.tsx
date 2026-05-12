@@ -1,4 +1,5 @@
 import React from 'react';
+import { SEO } from '../components/SEO';
 import { Navbar, Footer } from '../components/Navigation';
 import { Quote, Heart, Shuffle, Quote as QuoteIcon } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -59,6 +60,11 @@ export default function QuotesPage() {
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] selection:bg-black selection:text-white">
+      <SEO 
+        title="Favorite Quotes" 
+        description="A curated collection of words that move us. Thoughts and inspirations from Tazim Sheriff."
+        url="https://blog.tazimsheriff.dev/quotes"
+      />
       <Navbar />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
