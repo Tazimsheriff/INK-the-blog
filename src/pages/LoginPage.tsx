@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { auth } from '../lib/firebase';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import { Navbar, Footer } from '../components/Navigation';
 import { motion } from 'motion/react';
 import { toast } from 'react-hot-toast';
@@ -17,7 +16,11 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
       toast.success('Signed in successfully');
       navigate('/admin');
     } catch (err: any) {
@@ -28,11 +31,14 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      toast.success('Signed in successfully');
-      navigate('/admin');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
     } catch (err: any) {
       toast.error('Google sign in failed');
     }

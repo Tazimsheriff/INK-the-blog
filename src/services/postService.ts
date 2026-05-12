@@ -1,105 +1,115 @@
-import { 
-  collection, 
-  query, 
-  where, 
-  getDocs, 
-  getDoc,
-  doc,
-  orderBy, 
-  limit, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc,
-  serverTimestamp,
-  increment,
-  Timestamp
-} from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { supabase } from '../lib/supabase';
 import { Post } from '../types';
 
 export const postService = {
   // --- Public Methods ---
   
   async getPublishedPosts(category?: string, maxLimit = 20) {
-    let q = query(
-      collection(db, 'posts'),
-      where('status', '==', 'published'),
-      orderBy('createdAt', 'desc'),
-      limit(maxLimit)
-    );
+    let query = supabase
+      .from('posts')
+      .select('*')
+      .eq('status', 'published')
+      .order('createdAt', { ascending: false })
+      .limit(maxLimit);
     
     if (category && category !== 'All') {
-      q = query(q, where('category', '==', category));
+      query = query.eq('category', category);
     }
     
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => this.mapPost(doc));
+    const { data, error } = await query;
+    if (error) throw error;
+    return (data || []).map(post => this.mapPost(post));
   },
   
   async getPostBySlug(slug: string) {
-    const q = query(collection(db, 'posts'), where('slug', '==', slug), limit(1));
-    const snapshot = await getDocs(q);
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('slug', slug)
+      .single();
     
-    if (snapshot.empty) return null;
-    const postDoc = snapshot.docs[0];
+    if (error) {
+      if (error.code === 'PGRST116') return null; // Not found
+      throw error;
+    }
     
     // Increment view count asynchronously
-    this.incrementViews(postDoc.id);
+    this.incrementViews(data.id);
     
-    return this.mapPost(postDoc);
+    return this.mapPost(data);
   },
   
   async incrementViews(postId: string) {
-    const postRef = doc(db, 'posts', postId);
-    await updateDoc(postRef, { viewCount: increment(1) });
+    const { error } = await supabase.rpc('increment_view_count', { post_id: postId });
+    if (error) {
+      // Fallback if RCP not defined yet
+      const { data: post } = await supabase.from('posts').select('viewCount').eq('id', postId).single();
+      await supabase.from('posts').update({ viewCount: (post?.viewCount || 0) + 1 }).eq('id', postId);
+    }
   },
 
   async toggleLike(postId: string, amount: number) {
-    const postRef = doc(db, 'posts', postId);
-    await updateDoc(postRef, { likeCount: increment(amount) });
+    const { data: post } = await supabase.from('posts').select('likeCount').eq('id', postId).single();
+    await supabase.from('posts').update({ likeCount: (post?.likeCount || 0) + amount }).eq('id', postId);
   },
 
   // --- Admin Methods ---
 
   async getAllPostsAdmin() {
-    const q = query(collection(db, 'posts'), orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => this.mapPost(doc));
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*')
+      .order('createdAt', { ascending: false });
+    
+    if (error) throw error;
+    return (data || []).map(post => this.mapPost(post));
   },
 
   async createPost(postData: Partial<Post>) {
-    const docRef = await addDoc(collection(db, 'posts'), {
-      ...postData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      viewCount: 0,
-      likeCount: 0,
-      status: postData.status || 'draft'
-    });
-    return docRef.id;
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([{
+        ...postData,
+        viewCount: 0,
+        likeCount: 0,
+        status: postData.status || 'draft'
+      }])
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data.id;
   },
 
   async updatePost(postId: string, postData: Partial<Post>) {
-    const postRef = doc(db, 'posts', postId);
-    await updateDoc(postRef, {
-      ...postData,
-      updatedAt: serverTimestamp()
-    });
+    const { error } = await supabase
+      .from('posts')
+      .update({
+        ...postData,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', postId);
+    
+    if (error) throw error;
   },
 
   async deletePost(postId: string) {
-    await deleteDoc(doc(db, 'posts', postId));
+    const { error } = await supabase
+      .from('posts')
+      .delete()
+      .eq('id', postId);
+    
+    if (error) throw error;
   },
 
   // --- Helpers ---
   
-  mapPost(doc: any): Post {
-    const data = doc.data();
+  mapPost(data: any): Post {
     return {
-      id: doc.id,
       ...data,
-      createdAt: (data.createdAt as Timestamp)?.toDate() || new Date(),
-      updatedAt: (data.updatedAt as Timestamp)?.toDate() || new Date(),
+      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+      updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
+      publishedAt: data.publishedAt ? new Date(data.publishedAt) : undefined,
     } as Post;
   }
 };

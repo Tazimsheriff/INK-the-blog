@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { auth } from '../lib/firebase';
-import { signOut } from 'firebase/auth';
+import { supabase } from '../lib/supabase';
 import { Menu, X, LogIn, LayoutDashboard, LogOut, Search, Feather, Plus, ArrowUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -13,7 +12,7 @@ export function Navbar() {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     navigate('/');
   };
 

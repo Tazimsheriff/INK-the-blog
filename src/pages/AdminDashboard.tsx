@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
-import { auth } from '../lib/firebase';
-import { signOut } from 'firebase/auth';
+import { supabase } from '../lib/supabase';
 import { 
   LayoutDashboard, FileText, Image as ImageIcon, MessageSquare, 
   Settings, TrendingUp, Users, LogOut, ChevronRight, Plus, 
@@ -199,7 +198,7 @@ export default function AdminDashboard() {
   const location = useLocation();
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await supabase.auth.signOut();
     navigate('/login');
   };
 
@@ -249,10 +248,10 @@ export default function AdminDashboard() {
         <div className="p-8 border-t border-black/5 bg-[#FBFBFB]">
           <div className="flex items-center space-x-4 mb-8">
             <div className="w-10 h-10 rounded-full overflow-hidden border border-black/5">
-              <img src={`https://ui-avatars.com/api/?name=${user?.displayName}&background=random`} alt={user?.displayName} />
+              <img src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.user_metadata?.full_name || user?.email}&background=random`} alt={user?.user_metadata?.full_name} />
             </div>
             <div className="overflow-hidden">
-               <span className="block text-xs font-bold truncate">{user?.displayName || 'Admin'}</span>
+               <span className="block text-xs font-bold truncate">{user?.user_metadata?.full_name || user?.email || 'Admin'}</span>
                <span className="block text-[10px] text-black/40 font-bold uppercase tracking-widest">Administrator</span>
             </div>
           </div>

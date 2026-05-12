@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { SEO } from '../components/SEO';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { Post } from '../types';
 import { Navbar, Footer } from '../components/Navigation';
 import { PostCard, Newsletter } from '../components/BlogComponents';
-import { ArrowRight, TrendingUp, Sparkles, BookOpen } from 'lucide-react';
+import { ArrowRight, TrendingUp, BookOpen } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
+import { postService } from '../services/postService';
 
 export default function LandingPage() {
   const [featuredPosts, setFeaturedPosts] = useState<Post[]>([]);
@@ -16,120 +15,15 @@ export default function LandingPage() {
 
   useEffect(() => {
     async function fetchData() {
-      // Use mock data as fallback
-      const mockPosts: Post[] = [
-        {
-          id: '5',
-          title: 'Last smoke',
-          slug: 'last-smoke',
-          excerpt: 'She was just getting back from work, exhausted and tired. Walking down the street, her legs hurt and so did her head.',
-          content: 'Full content here...',
-          coverImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Narrative',
-          tags: ['story', 'urban'],
-          status: 'published',
-          viewCount: 3200,
-          likeCount: 890,
-          createdAt: new Date('2022-11-13'),
-          updatedAt: new Date('2022-11-13'),
-        },
-        {
-          id: '4',
-          title: 'Peace amidst chaos',
-          slug: 'peace-amidst-chaos',
-          excerpt: 'Another post and another chance for me to express my thought on this thing called blog.I feel the effect of sleep acting on me like a sedat...',
-          content: 'Full content here...',
-          coverImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070&auto=format&fit=crop',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Reflection',
-          tags: ['peace', 'solitude'],
-          status: 'published',
-          viewCount: 850,
-          likeCount: 210,
-          createdAt: new Date('2022-11-12'),
-          updatedAt: new Date('2022-11-12'),
-        },
-        {
-          id: '1',
-          title: 'Conflict',
-          slug: 'conflict',
-          excerpt: 'I have been addicted to this Japanese song called conflict .Sometimes I wonder if I am liking songs for what they truly hold true and show.',
-          content: 'Full content here...',
-          coverImage: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1974&auto=format&fit=crop',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Personal',
-          tags: ['thoughts', 'reflection', 'life'],
-          status: 'published',
-          viewCount: 1200,
-          likeCount: 450,
-          createdAt: new Date('2022-11-11'),
-          updatedAt: new Date('2022-11-11'),
-        },
-        {
-          id: '2',
-          title: 'It goes on',
-          slug: 'it-goes-on',
-          excerpt: 'The phones light keeps hitting my eyes right where it hurts .Ack my eyes ,I start having those thoughts of getting up early...',
-          content: 'Full content here...',
-          coverImage: 'https://i.ibb.co/zhJVGq1V/tazimfr.jpg',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Philosophy',
-          tags: ['productivity', 'thoughts'],
-          status: 'published',
-          viewCount: 1500,
-          likeCount: 300,
-          createdAt: new Date('2022-11-11'),
-          updatedAt: new Date('2022-11-11'),
-        },
-        {
-          id: '3',
-          title: 'Day 1',
-          slug: 'day-1',
-          excerpt: 'Its raining and I start to feel like the world has been separated again. The way we never get harmed by rains much when you have a roof...',
-          content: 'Full content here...',
-          coverImage: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1974&auto=format&fit=crop',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Reflection',
-          tags: ['rain', 'solitude'],
-          status: 'published',
-          viewCount: 2200,
-          likeCount: 560,
-          createdAt: new Date('2022-11-11'),
-          updatedAt: new Date('2022-11-11'),
-        }
-      ];
-
       try {
-        const q = query(
-          collection(db, 'posts'),
-          where('status', '==', 'published'),
-          orderBy('createdAt', 'desc'),
-          limit(6)
-        );
-        const snapshot = await getDocs(q);
-        const posts = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate() || new Date(),
-        })) as Post[];
+        const posts = await postService.getPublishedPosts('All', 6);
         
         if (posts.length > 0) {
           setFeaturedPosts(posts);
           setTrendingPosts([...posts].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 3));
-        } else {
-          setFeaturedPosts(mockPosts);
-          setTrendingPosts([...mockPosts].reverse());
         }
       } catch (err) {
         console.error("Error fetching landing data:", err);
-        setFeaturedPosts(mockPosts);
-        setTrendingPosts([...mockPosts].reverse());
       } finally {
         setLoading(false);
       }

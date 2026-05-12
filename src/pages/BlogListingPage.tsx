@@ -19,104 +19,11 @@ export default function BlogListingPage() {
 
   useEffect(() => {
     async function fetchPosts() {
-      const mockPosts: Post[] = [
-        {
-          id: '1',
-          title: 'Conflict',
-          slug: 'conflict',
-          excerpt: 'I have been addicted to this Japanese song called conflict .Sometimes I wonder if I am liking songs for what they truly hold true and show.',
-          content: 'Full content here...',
-          coverImage: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=1974&auto=format&fit=crop',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Personal',
-          tags: ['thoughts', 'reflection'],
-          status: 'published',
-          viewCount: 1200,
-          likeCount: 450,
-          createdAt: new Date('2022-11-11'),
-          updatedAt: new Date('2022-11-11'),
-        },
-        {
-          id: '2',
-          title: 'Peace amidst chaos',
-          slug: 'peace-amidst-chaos',
-          excerpt: 'Another post and another chance for me to express my thought on this thing called blog.I feel the effect of sleep acting on me like a sedat...',
-          content: 'Full content here...',
-          coverImage: 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=2070&auto=format&fit=crop',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Reflection',
-          tags: ['peace', 'solitude'],
-          status: 'published',
-          viewCount: 850,
-          likeCount: 210,
-          createdAt: new Date('2022-11-12'),
-          updatedAt: new Date('2022-11-12'),
-        },
-        {
-          id: '3',
-          title: 'Last smoke',
-          slug: 'last-smoke',
-          excerpt: 'She was just getting back from work, exhausted and tired. Walking down the street, her legs hurt and so did her head. The workers at the off...',
-          content: 'Full content here...',
-          coverImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Narrative',
-          tags: ['story', 'urban'],
-          status: 'published',
-          viewCount: 3200,
-          likeCount: 890,
-          createdAt: new Date('2022-11-13'),
-          updatedAt: new Date('2022-11-13'),
-        },
-        {
-          id: '4',
-          title: 'It goes on',
-          slug: 'it-goes-on',
-          excerpt: 'The phones light keeps hitting my eyes right where it hurts .Ack my eyes ,I start having those thoughts of getting up early...',
-          content: 'Full content here...',
-          coverImage: 'https://i.ibb.co/zhJVGq1V/tazimfr.jpg',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Reflection',
-          tags: ['productivity', 'thoughts'],
-          status: 'published',
-          viewCount: 1500,
-          likeCount: 300,
-          createdAt: new Date('2022-11-11'),
-          updatedAt: new Date('2022-11-11'),
-        },
-        {
-          id: '5',
-          title: 'Day 1',
-          slug: 'day-1',
-          excerpt: 'Its raining and I start to feel like the world has been separated again. The way we never get harmed by rains much when you have a roof over your head...',
-          content: 'Full content here...',
-          coverImage: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1974&auto=format&fit=crop',
-          authorId: 'auth1',
-          authorName: 'Mizat',
-          category: 'Reflection',
-          tags: ['rain', 'solitude'],
-          status: 'published',
-          viewCount: 2200,
-          likeCount: 560,
-          createdAt: new Date('2022-11-11'),
-          updatedAt: new Date('2022-11-11'),
-        }
-      ];
-
       try {
         const fetchedPosts = await postService.getPublishedPosts();
-        if (fetchedPosts.length > 0) {
-          setPosts(fetchedPosts);
-        } else {
-          setPosts(mockPosts);
-        }
+        setPosts(fetchedPosts);
       } catch (err) {
         console.error("Error fetching posts:", err);
-        setPosts(mockPosts);
       } finally {
         setLoading(false);
       }

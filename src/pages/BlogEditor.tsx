@@ -11,9 +11,6 @@ import {
   CheckCircle, ChevronLeft, Heading1, Heading2, Heading3
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { db, storage } from '../lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
@@ -61,8 +58,8 @@ export function BlogEditor() {
         content: editor.getHTML(),
         coverImage,
         category,
-        authorId: user?.uid,
-        authorName: user?.displayName || user?.email || 'Author',
+        authorId: user?.id,
+        authorName: user?.user_metadata?.full_name || user?.email || 'Author',
         status: 'published',
       });
       toast.success('Thought published to the world');

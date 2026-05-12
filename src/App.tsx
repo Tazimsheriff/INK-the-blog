@@ -1,9 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { auth, db } from './lib/firebase';
-import { User, Role } from './types';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { supabase } from './lib/supabase';
 import { Toaster } from 'react-hot-toast';
 
 import LandingPage from './pages/LandingPage';
@@ -14,41 +11,37 @@ import AdminDashboard from './pages/AdminDashboard';
 import QuotesPage from './pages/QuotesPage';
 
 import { SEO } from './components/SEO';
-
 import { useAppStore } from './store/useAppStore';
 
 export default function App() {
   const { setUser, setAuthLoading, isAuthLoading, user, isAdmin } = useAppStore();
 
   useEffect(() => {
-    return onAuthStateChanged(auth, async (fbUser) => {
-      if (fbUser) {
-        const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as User;
-          setUser({
-            ...fbUser,
-            displayName: userData.displayName,
-            photoURL: userData.photoURL
-          } as any, userData.role === 'admin');
-        } else {
-          const newUser = {
-            uid: fbUser.uid,
-            email: fbUser.email,
-            displayName: fbUser.displayName || 'Author',
-            role: fbUser.email === 'mubashirtazim2k@gmail.com' ? 'admin' : 'reader',
-          };
-          await setDoc(doc(db, 'users', fbUser.uid), {
-            ...newUser,
-            createdAt: serverTimestamp()
-          });
-          setUser(fbUser as any, newUser.role === 'admin');
-        }
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const user = session.user;
+        const isAdmin = user.email === 'mubashirtazim2k@gmail.com';
+        setUser(user, isAdmin);
       } else {
         setUser(null, false);
       }
       setAuthLoading(false);
     });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        const user = session.user;
+        const isAdmin = user.email === 'mubashirtazim2k@gmail.com';
+        setUser(user, isAdmin);
+      } else {
+        setUser(null, false);
+      }
+      setAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, [setUser, setAuthLoading]);
 
   if (isAuthLoading) return (
