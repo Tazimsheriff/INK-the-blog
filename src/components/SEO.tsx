@@ -16,7 +16,7 @@ export const SEO: React.FC<SEOProps> = ({
   url = "https://blog.tazimsheriff.dev/",
   type = "website"
 }) => {
-  const siteTitle = "Tazim Sheriff Blog";
+  const siteTitle = "INK";
   const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
 
   return (

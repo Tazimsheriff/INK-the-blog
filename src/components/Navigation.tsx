@@ -22,7 +22,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           <Link to="/" className="flex items-center space-x-1">
-            <span className="font-serif text-2xl font-black tracking-tighter uppercase whitespace-nowrap">Tazim Sheriff Blog</span>
+            <span className="font-serif text-2xl font-black tracking-tighter uppercase whitespace-nowrap">INK.</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -129,7 +129,7 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
             <div className="md:col-span-2">
               <Link to="/" className="flex items-center space-x-1 mb-6">
-                <span className="font-serif text-2xl font-black tracking-tighter uppercase">Tazim Sheriff Blog</span>
+                <span className="font-serif text-2xl font-black tracking-tighter uppercase">INK.</span>
               </Link>
               <p className="text-black/60 max-w-sm font-serif text-xl leading-relaxed italic">
                 Curated perspectives on design, culture, and the art of slowing down.
@@ -154,7 +154,7 @@ export function Footer() {
             </div>
           </div>
           <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-black/5 text-sm text-black/40">
-            <p>© {new Date().getFullYear()} Tazim Sheriff Blog. Crafted for the curious.</p>
+            <p>© {new Date().getFullYear()} INK. Crafted for the curious.</p>
             <div className="flex space-x-8 mt-4 md:mt-0">
               <a 
                 href="#" 
