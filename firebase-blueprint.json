@@ -1,0 +1,131 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account information and roles",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "author", "reader"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Post": {
+      "title": "Blog Post",
+      "description": "A blog article entry",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "content": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "category": { "type": "string" },
+        "tags": { "type": "array" },
+        "status": { "type": "string", "enum": ["draft", "published"] },
+        "viewCount": { "type": "integer" },
+        "likeCount": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "publishedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "slug", "content", "authorId", "status"]
+    },
+    "Comment": {
+      "title": "Post Comment",
+      "description": "A comment left on a blog post",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "postId": { "type": "string" },
+        "parentId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userAvatar": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["postId", "userId", "content"]
+    },
+    "Category": {
+      "title": "Post Category",
+      "description": "A category for grouping posts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" }
+      },
+      "required": ["name", "slug"]
+    },
+    "Tag": {
+      "title": "Post Tag",
+      "description": "A tag for labeling posts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" }
+      },
+      "required": ["name", "slug"]
+    },
+    "Newsletter": {
+      "title": "Newsletter Subscription",
+      "description": "A user's subscription to the newsletter",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email"]
+    },
+    "Like": {
+      "title": "Post Like",
+      "description": "A like interaction",
+      "type": "object",
+      "properties": {
+        "postId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["postId", "userId"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "posts": {
+      "schema": "Post",
+      "description": "Blog posts"
+    },
+    "comments": {
+      "schema": "Comment",
+      "description": "Post comments"
+    },
+    "categories": {
+      "schema": "Category",
+      "description": "Main blog categories"
+    },
+    "tags": {
+      "schema": "Tag",
+      "description": "Searchable tags"
+    },
+    "newsletter": {
+      "schema": "Newsletter",
+      "description": "Newsletter subscribers list"
+    },
+    "likes": {
+      "schema": "Like",
+      "description": "User likes on posts"
+    }
+  }
+}
