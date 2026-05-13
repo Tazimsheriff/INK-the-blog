@@ -18,6 +18,33 @@ async function startServer() {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
+  // Proxy endpoint for Blogger to avoid CORS
+  app.get("/api/proxy/blogger", async (req, res) => {
+    const blogUrl = req.query.url as string;
+    if (!blogUrl) {
+      return res.status(400).json({ error: "Missing blog URL" });
+    }
+
+    // Clean the URL and ensure it ends with /feeds/posts/default?alt=json
+    let feedUrl = blogUrl;
+    if (!feedUrl.includes("/feeds/")) {
+      feedUrl = feedUrl.replace(/\/$/, "");
+      feedUrl = `${feedUrl}/feeds/posts/default?alt=json`;
+    }
+
+    try {
+      const response = await fetch(feedUrl);
+      if (!response.ok) {
+        throw new Error(`Blogger responded with ${response.status}`);
+      }
+      const data = await response.json();
+      res.json(data);
+    } catch (err: any) {
+      console.error("[Proxy Error]", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Handle SPA and assets
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

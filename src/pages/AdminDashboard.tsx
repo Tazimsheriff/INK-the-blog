@@ -98,6 +98,7 @@ const AllPosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [bloggerUrl, setBloggerUrl] = useState('https://mizatblogger.blogspot.com/');
   const { user } = useAppStore();
 
   const loadPosts = async () => {
@@ -117,37 +118,52 @@ const AllPosts = () => {
   }, []);
 
   const importFromBlogger = async () => {
-    const bloggerUrl = 'https://mizatblogger.blogspot.com/feeds/posts/default?alt=json';
+    if (!bloggerUrl) {
+      toast.error('Please enter a Blogger URL');
+      return;
+    }
+
     setImporting(true);
-    const toastId = toast.loading('Fetching posts from Blogger...');
+    const toastId = toast.loading('Connecting to Blogger...');
 
     try {
-      const response = await fetch(bloggerUrl);
-      if (!response.ok) throw new Error('Failed to fetch from Blogger');
+      const proxyUrl = `/api/proxy/blogger?url=${encodeURIComponent(bloggerUrl)}`;
+      const response = await fetch(proxyUrl);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to fetch (Status: ${response.status})`);
+      }
       
       const data = await response.json();
-      const entries = data.feed.entry || [];
+      const entries = data.feed?.entry || [];
 
       if (entries.length === 0) {
-        toast.error('No posts found on Blogger.', { id: toastId });
+        toast.error('No posts found at this URL. Make sure it is a public Blogger blog.', { id: toastId });
         return;
       }
 
-      toast.loading(`Found ${entries.length} posts. Importing...`, { id: toastId });
+      toast.loading(`Found ${entries.length} posts. Importing into your inventory...`, { id: toastId });
 
+      // Get latest posts to ensure we don't duplicate
+      const currentPosts = await postService.getAllPostsAdmin();
+      
       let importedCount = 0;
       for (const entry of entries) {
         const title = entry.title.$t;
         const slug = slugify(title);
         
-        // Check if post already exists in current list
-        const isExisting = posts.some(p => p.slug === slug);
+        // Check if post already exists
+        const isExisting = currentPosts.some(p => p.slug === slug);
         if (isExisting) continue;
 
         const content = entry.content.$t;
         const excerpt = content.replace(/<[^>]*>/g, '').slice(0, 160) + '...';
-        
         const authorName = user?.user_metadata?.full_name || user?.email || 'Mizat';
+        
+        // Extract category if available
+        const bloggerCategories = entry.category?.map((c: any) => c.term) || [];
+        const category = bloggerCategories[0] || 'Lifestyle';
         
         try {
           await postService.createPost({
@@ -155,11 +171,11 @@ const AllPosts = () => {
             slug,
             excerpt,
             content,
-            category: 'Life',
+            category,
             authorId: user?.id,
             authorName,
             status: 'published',
-            publishedAt: new Date().toISOString()
+            publishedAt: entry.published.$t
           });
           importedCount++;
         } catch (err) {
@@ -168,14 +184,14 @@ const AllPosts = () => {
       }
 
       if (importedCount > 0) {
-        toast.success(`Successfully imported ${importedCount} posts!`, { id: toastId });
+        toast.success(`Successfully imported ${importedCount} new stories!`, { id: toastId });
         await loadPosts();
       } else {
-        toast.success('All posts were already present.', { id: toastId });
+        toast.success('All stories from this blog are already in your inventory.', { id: toastId });
       }
     } catch (err: any) {
       console.error('Import error:', err);
-      toast.error(`Import failed: ${err.message || 'Unknown error'}`, { id: toastId });
+      toast.error(`Import failed: ${err.message}`, { id: toastId });
     } finally {
       setImporting(false);
     }
@@ -183,25 +199,39 @@ const AllPosts = () => {
 
   return (
     <div className="bg-white rounded-3xl border border-black/5 overflow-hidden">
-      <div className="p-8 border-b border-black/5 flex items-center justify-between bg-[#FBFBFB]">
-         <h3 className="font-serif text-xl font-medium">Content Inventory</h3>
-         <div className="flex items-center space-x-3">
+      <div className="p-8 border-b border-black/5 flex flex-col space-y-6 bg-[#FBFBFB]">
+         <div className="flex items-center justify-between">
+            <h3 className="font-serif text-xl font-medium">Content Inventory</h3>
+            <div className="flex items-center space-x-3">
+               <div className="relative">
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" />
+                  <input type="text" placeholder="Search stories..." className="pl-10 pr-6 py-2 bg-black/5 border-none rounded-full text-sm focus:ring-1 focus:ring-black transition-all" />
+               </div>
+               <Link to="/admin/create" className="bg-black text-white px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black/80 transition-all flex items-center space-x-2">
+                  <Plus size={16} />
+                  <span>Create</span>
+               </Link>
+            </div>
+         </div>
+
+         <div className="flex items-center space-x-4 p-4 bg-black/5 rounded-2xl border border-black/5">
+            <div className="flex-1 relative">
+               <input 
+                  type="text" 
+                  value={bloggerUrl}
+                  onChange={(e) => setBloggerUrl(e.target.value)}
+                  placeholder="https://yourblog.blogspot.com/"
+                  className="w-full bg-white border border-black/10 rounded-full px-6 py-2.5 text-sm focus:ring-1 focus:ring-black transition-all"
+               />
+            </div>
             <button 
               onClick={importFromBlogger}
               disabled={importing}
-              className="flex items-center space-x-2 px-5 py-2.5 bg-black/5 hover:bg-black/10 border border-black/10 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all outline-none"
+              className="flex items-center space-x-2 px-6 py-2.5 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-widest transition-all outline-none disabled:opacity-50"
             >
               <DownloadCloud size={14} className={importing ? "animate-pulse" : ""} />
-              <span>{importing ? 'Importing...' : 'Import Blogger'}</span>
+              <span>{importing ? 'Importing...' : 'Import from Blogger'}</span>
             </button>
-            <div className="relative">
-               <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" />
-               <input type="text" placeholder="Search stories..." className="pl-10 pr-6 py-2 bg-black/5 border-none rounded-full text-sm focus:ring-1 focus:ring-black transition-all" />
-            </div>
-            <Link to="/admin/create" className="bg-black text-white px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black/80 transition-all flex items-center space-x-2">
-               <Plus size={16} />
-               <span>Create</span>
-            </Link>
          </div>
       </div>
       <table className="w-full text-left">
