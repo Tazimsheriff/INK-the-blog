@@ -8,13 +8,16 @@ import { common, createLowlight } from 'lowlight';
 import { 
   Bold, Italic, List, ListOrdered, Quote, Code, Image as ImageIcon, 
   Link as LinkIcon, Undo, Redo, Save, Eye, Settings, Clock, 
-  CheckCircle, ChevronLeft, Heading1, Heading2, Heading3
+  CheckCircle, ChevronLeft, Heading1, Heading2, Heading3,
+  Copy, Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { postService } from '../services/postService';
+import { wallpaperService } from '../services/wallpaperService';
+import { Wallpaper } from '../types';
 import { slugify, estimateReadTime } from '../lib/utils';
 import { cn } from '../lib/utils';
 
@@ -29,6 +32,20 @@ export function BlogEditor() {
   const [coverImage, setCoverImage] = useState('');
   const [isPublishing, setIsPublishing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
+  const [activeTab, setActiveTab] = useState<'settings' | 'wallpapers'>('settings');
+
+  useEffect(() => {
+    async function loadWallpapers() {
+      try {
+        const data = await wallpaperService.getAllWallpapers();
+        setWallpapers(data);
+      } catch (err) {
+        console.error("Failed to load wallpapers", err);
+      }
+    }
+    loadWallpapers();
+  }, []);
 
   const editor = useEditor({
     extensions: [
@@ -147,57 +164,135 @@ export function BlogEditor() {
               animate={{ opacity: 1, x: 0 }}
               className="lg:block space-y-10"
             >
-              <div className="bg-white p-8 rounded-3xl border border-black/5 space-y-6">
-                 <h4 className="font-serif text-xl font-medium mb-6">Meta Details</h4>
-                 
-                 <div className="space-y-4">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Cover Image URL</label>
-                    <input 
-                      type="text" 
-                      value={coverImage}
-                      onChange={(e) => setCoverImage(e.target.value)}
-                      placeholder="https://..."
-                      className="w-full bg-black/5 border-none rounded-2xl py-3 px-4 text-xs"
-                    />
-                    {coverImage && <img src={coverImage} className="w-full h-32 object-cover rounded-xl mt-2" />}
-                 </div>
-
-                 <div className="space-y-4">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Category</label>
-                    <select 
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                      className="w-full bg-black/5 border-none rounded-2xl py-3 px-4 text-xs font-bold uppercase tracking-widest"
-                    >
-                      <option>Lifestyle</option>
-                      <option>Design</option>
-                      <option>Technology</option>
-                      <option>Business</option>
-                      <option>Psychology</option>
-                    </select>
-                 </div>
-
-                 <div className="space-y-4">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Excerpt</label>
-                    <textarea 
-                      value={excerpt}
-                      onChange={(e) => setExcerpt(e.target.value)}
-                      placeholder="A short summary of your story..."
-                      className="w-full bg-black/5 border-none rounded-2xl py-3 px-4 text-xs h-32 resize-none"
-                    />
-                 </div>
-
-                 <div className="pt-6 border-t border-black/5 space-y-4">
-                    <div className="flex items-center justify-between text-xs text-black/40 font-bold uppercase tracking-widest">
-                       <span>Read Time</span>
-                       <span>{estimateReadTime(editor.getHTML())} min</span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs text-black/40 font-bold uppercase tracking-widest">
-                       <span>Word Count</span>
-                       <span>{editor.getText().trim().split(/\s+/).length} words</span>
-                    </div>
-                 </div>
+              <div className="bg-white p-2 rounded-full border border-black/5 flex mb-6">
+                <button 
+                  onClick={() => setActiveTab('settings')}
+                  className={cn(
+                    "flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all",
+                    activeTab === 'settings' ? "bg-black text-white" : "hover:bg-black/5 text-black/40"
+                  )}
+                >
+                  Settings
+                </button>
+                <button 
+                  onClick={() => setActiveTab('wallpapers')}
+                  className={cn(
+                    "flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all",
+                    activeTab === 'wallpapers' ? "bg-black text-white" : "hover:bg-black/5 text-black/40"
+                  )}
+                >
+                  Gallery
+                </button>
               </div>
+
+              {activeTab === 'settings' ? (
+                <div className="bg-white p-8 rounded-3xl border border-black/5 space-y-6">
+                  <h4 className="font-serif text-xl font-medium mb-6">Meta Details</h4>
+                  
+                  <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Cover Image</label>
+                        <button 
+                          onClick={() => setActiveTab('wallpapers')}
+                          className="text-[9px] font-bold uppercase tracking-widest text-accent hover:underline"
+                        >
+                          Select from Wallpapers
+                        </button>
+                      </div>
+                      <input 
+                        type="text" 
+                        value={coverImage}
+                        onChange={(e) => setCoverImage(e.target.value)}
+                        placeholder="https://..."
+                        className="w-full bg-black/5 border-none rounded-2xl py-3 px-4 text-xs"
+                      />
+                      {coverImage && <img src={coverImage} className="w-full h-32 object-cover rounded-xl mt-2 shadow-sm" />}
+                  </div>
+
+                  <div className="space-y-4">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Category</label>
+                      <select 
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="w-full bg-black/5 border-none rounded-2xl py-3 px-4 text-xs font-bold uppercase tracking-widest appearance-none"
+                      >
+                        <option>Lifestyle</option>
+                        <option>Design</option>
+                        <option>Technology</option>
+                        <option>Business</option>
+                        <option>Psychology</option>
+                      </select>
+                  </div>
+
+                  <div className="space-y-4">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Excerpt</label>
+                      <textarea 
+                        value={excerpt}
+                        onChange={(e) => setExcerpt(e.target.value)}
+                        placeholder="A short summary of your story..."
+                        className="w-full bg-black/5 border-none rounded-2xl py-3 px-4 text-xs h-32 resize-none"
+                      />
+                  </div>
+
+                  <div className="pt-6 border-t border-black/5 space-y-4">
+                      <div className="flex items-center justify-between text-xs text-black/40 font-bold uppercase tracking-widest">
+                        <span>Read Time</span>
+                        <span>{estimateReadTime(editor.getHTML())} min</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-black/40 font-bold uppercase tracking-widest">
+                        <span>Word Count</span>
+                        <span>{editor.getText().trim().split(/\s+/).length} words</span>
+                      </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white p-8 rounded-3xl border border-black/5 space-y-6 max-h-[80vh] overflow-y-auto">
+                  <h4 className="font-serif text-xl font-medium mb-6">Wallpaper Gallery</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {wallpapers.map(w => (
+                      <div key={w.id} className="group relative">
+                        <img 
+                          src={w.url} 
+                          alt={w.title} 
+                          className="w-full aspect-square object-cover rounded-xl border border-black/5"
+                        />
+                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex flex-col items-center justify-center space-y-2 p-2">
+                           <button 
+                            onClick={() => {
+                              setCoverImage(w.url);
+                              setActiveTab('settings');
+                              toast.success('Cover image set');
+                            }}
+                            className="w-full py-1.5 bg-white text-black text-[8px] font-bold uppercase tracking-widest rounded-full hover:bg-accent hover:text-white transition-all"
+                           >
+                             Set Cover
+                           </button>
+                           <button 
+                            onClick={() => {
+                              editor.chain().focus().setImage({ src: w.url }).run();
+                              toast.success('Inserted into post');
+                            }}
+                            className="w-full py-1.5 bg-black text-white text-[8px] font-bold uppercase tracking-widest rounded-full hover:bg-white hover:text-black transition-all"
+                           >
+                             Insert
+                           </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {wallpapers.length === 0 && (
+                    <div className="text-center py-10">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-black/20">No wallpapers found</p>
+                      <button 
+                        onClick={() => navigate('/admin/wallpapers')}
+                        className="mt-4 text-[9px] font-bold uppercase tracking-widest text-accent underline"
+                      >
+                        Add wallpapers
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.aside>
           )}
         </AnimatePresence>

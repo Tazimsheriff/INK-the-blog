@@ -9,6 +9,7 @@ import PostPage from './pages/PostPage';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import QuotesPage from './pages/QuotesPage';
+import WallpapersPage from './pages/WallpapersPage';
 
 import { SEO } from './components/SEO';
 import { useAppStore } from './store/useAppStore';
@@ -61,6 +62,7 @@ export default function App() {
         <Route path="/trending" element={<BlogListingPage />} />
         <Route path="/categories" element={<BlogListingPage />} />
         <Route path="/quotes" element={<QuotesPage />} />
+        <Route path="/wallpapers" element={<WallpapersPage />} />
         <Route path="/blog/:slug" element={<PostPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/newsletter" element={<LandingPage />} />

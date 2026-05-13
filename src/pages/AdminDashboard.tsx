@@ -10,6 +10,7 @@ import {
 import { motion } from 'motion/react';
 import { cn, formatDate, slugify } from '../lib/utils';
 import { BlogEditor } from './BlogEditor';
+import { WallpaperManager } from './WallpaperManager';
 import { postService } from '../services/postService';
 import { Post } from '../types';
 import { toast } from 'react-hot-toast';
@@ -315,7 +316,8 @@ export default function AdminDashboard() {
     { label: 'Overview', path: '/admin', icon: LayoutDashboard },
     { label: 'Stories', path: '/admin/posts', icon: FileText },
     { label: 'Compose', path: '/admin/create', icon: PenTool },
-    { label: 'Drafts', path: '/admin/drafts', icon: ImageIcon },
+    { label: 'Wallpapers', path: '/admin/wallpapers', icon: ImageIcon },
+    { label: 'Drafts', path: '/admin/drafts', icon: FileText },
     { label: 'Comments', path: '/admin/comments', icon: MessageSquare },
     { label: 'Settings', path: '/admin/settings', icon: Settings },
   ];
@@ -401,6 +403,7 @@ export default function AdminDashboard() {
           <Routes>
             <Route index element={<Overview />} />
             <Route path="posts" element={<AllPosts />} />
+            <Route path="wallpapers" element={<WallpaperManager />} />
             <Route path="create" element={<BlogEditor />} />
             <Route path="drafts" element={<ComingSoon title="Archive & Drafts" />} />
             <Route path="comments" element={<ComingSoon title="Comment Moderation" />} />

@@ -51,3 +51,13 @@ export interface Tag {
   name: string;
   slug: string;
 }
+
+export interface Wallpaper {
+  id: string;
+  title: string;
+  url: string;
+  thumbnailUrl?: string;
+  category?: string;
+  authorId?: string;
+  createdAt: any;
+}

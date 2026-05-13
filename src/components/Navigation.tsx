@@ -29,6 +29,7 @@ export function Navbar() {
             <nav className="flex gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-black/40">
               <Link to="/blog" className="hover:text-black transition-colors">Stories</Link>
               <Link to="/quotes" className="hover:text-black transition-colors">Quotes</Link>
+              <Link to="/wallpapers" className="hover:text-black transition-colors">Wallpapers</Link>
               <Link to="/newsletter" className="hover:text-black transition-colors">Newsletter</Link>
               <Link to="/archive" className="hover:text-black transition-colors">Archive</Link>
             </nav>
@@ -96,6 +97,7 @@ export function Navbar() {
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-black/20">Navigation</span>
               <Link to="/blog" className="text-2xl font-serif font-bold text-primary" onClick={() => setIsOpen(false)}>Stories</Link>
               <Link to="/quotes" className="text-2xl font-serif font-bold text-primary" onClick={() => setIsOpen(false)}>Quotes</Link>
+              <Link to="/wallpapers" className="text-2xl font-serif font-bold text-primary" onClick={() => setIsOpen(false)}>Wallpapers</Link>
               <Link to="/newsletter" className="text-2xl font-serif font-bold text-primary" onClick={() => setIsOpen(false)}>Newsletter</Link>
               <Link to="/archive" className="text-2xl font-serif font-bold text-primary" onClick={() => setIsOpen(false)}>Archive</Link>
               <Link to="/about" className="text-2xl font-serif font-bold text-primary" onClick={() => setIsOpen(false)}>Our Vision</Link>
@@ -139,6 +141,7 @@ export function Footer() {
               <ul className="space-y-4 text-black/60">
                 <li><Link to="/blog" className="hover:text-black hover:underline underline-offset-4">Read All</Link></li>
                 <li><Link to="/quotes" className="hover:text-black hover:underline underline-offset-4">Quotes</Link></li>
+                <li><Link to="/wallpapers" className="hover:text-black hover:underline underline-offset-4">Canvas</Link></li>
                 <li><Link to="/trending" className="hover:text-black hover:underline underline-offset-4">Trending</Link></li>
                 <li><Link to="/categories" className="hover:text-black hover:underline underline-offset-4">Topics</Link></li>
               </ul>

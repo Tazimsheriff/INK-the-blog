@@ -9,7 +9,7 @@ export const postService = {
       .from('posts')
       .select('*')
       .eq('status', 'published')
-      .order('createdAt', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(maxLimit);
     
     if (category && category !== 'All') {
@@ -43,14 +43,14 @@ export const postService = {
     const { error } = await supabase.rpc('increment_view_count', { post_id: postId });
     if (error) {
       // Fallback if RCP not defined yet
-      const { data: post } = await supabase.from('posts').select('viewCount').eq('id', postId).single();
-      await supabase.from('posts').update({ viewCount: (post?.viewCount || 0) + 1 }).eq('id', postId);
+      const { data: post } = await supabase.from('posts').select('view_count').eq('id', postId).single();
+      await supabase.from('posts').update({ view_count: (post?.view_count || 0) + 1 }).eq('id', postId);
     }
   },
 
   async toggleLike(postId: string, amount: number) {
-    const { data: post } = await supabase.from('posts').select('likeCount').eq('id', postId).single();
-    await supabase.from('posts').update({ likeCount: (post?.likeCount || 0) + amount }).eq('id', postId);
+    const { data: post } = await supabase.from('posts').select('like_count').eq('id', postId).single();
+    await supabase.from('posts').update({ like_count: (post?.like_count || 0) + amount }).eq('id', postId);
   },
 
   // --- Admin Methods ---
@@ -59,7 +59,7 @@ export const postService = {
     const { data, error } = await supabase
       .from('posts')
       .select('*')
-      .order('createdAt', { ascending: false });
+      .order('created_at', { ascending: false });
     
     if (error) throw error;
     return (data || []).map(post => this.mapPost(post));
@@ -68,12 +68,7 @@ export const postService = {
   async createPost(postData: Partial<Post>) {
     const { data, error } = await supabase
       .from('posts')
-      .insert([{
-        ...postData,
-        viewCount: 0,
-        likeCount: 0,
-        status: postData.status || 'draft'
-      }])
+      .insert([this.toDBPost(postData)])
       .select()
       .single();
     
@@ -84,10 +79,7 @@ export const postService = {
   async updatePost(postId: string, postData: Partial<Post>) {
     const { error } = await supabase
       .from('posts')
-      .update({
-        ...postData,
-        updatedAt: new Date().toISOString()
-      })
+      .update(this.toDBPost(postData))
       .eq('id', postId);
     
     if (error) throw error;
@@ -106,10 +98,41 @@ export const postService = {
   
   mapPost(data: any): Post {
     return {
-      ...data,
-      createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
-      updatedAt: data.updatedAt ? new Date(data.updatedAt) : new Date(),
-      publishedAt: data.publishedAt ? new Date(data.publishedAt) : undefined,
+      id: data.id,
+      title: data.title,
+      slug: data.slug,
+      content: data.content,
+      excerpt: data.excerpt,
+      coverImage: data.cover_image,
+      authorId: data.author_id,
+      authorName: data.author_name,
+      category: data.category,
+      tags: data.tags || [],
+      status: data.status,
+      viewCount: data.view_count || 0,
+      likeCount: data.like_count || 0,
+      createdAt: data.created_at ? new Date(data.created_at) : new Date(),
+      updatedAt: data.updated_at ? new Date(data.updated_at) : new Date(),
+      publishedAt: data.published_at ? new Date(data.published_at) : undefined,
     } as Post;
+  },
+
+  toDBPost(post: Partial<Post>) {
+    const dbPost: any = {};
+    if (post.title) dbPost.title = post.title;
+    if (post.slug) dbPost.slug = post.slug;
+    if (post.content) dbPost.content = post.content;
+    if (post.excerpt) dbPost.excerpt = post.excerpt;
+    if (post.coverImage) dbPost.cover_image = post.coverImage;
+    if (post.authorId) dbPost.author_id = post.authorId;
+    if (post.authorName) dbPost.author_name = post.authorName;
+    if (post.category) dbPost.category = post.category;
+    if (post.tags) dbPost.tags = post.tags;
+    if (post.status) dbPost.status = post.status;
+    
+    // Explicitly handle updates
+    dbPost.updated_at = new Date().toISOString();
+    
+    return dbPost;
   }
 };
