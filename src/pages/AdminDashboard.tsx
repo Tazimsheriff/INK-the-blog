@@ -8,10 +8,12 @@ import {
   Search, Bell, MoreVertical, ExternalLink, PenTool
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn, formatDate } from '../lib/utils';
+import { cn, formatDate, slugify } from '../lib/utils';
 import { BlogEditor } from './BlogEditor';
 import { postService } from '../services/postService';
 import { Post } from '../types';
+import { toast } from 'react-hot-toast';
+import { DownloadCloud } from 'lucide-react';
 
 // --- Dashboard Sub-Pages ---
 
@@ -95,31 +97,108 @@ const Overview = () => {
 const AllPosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
+  const { user } = useAppStore();
+
+  const loadPosts = async () => {
+    try {
+      setLoading(true);
+      const fetched = await postService.getAllPostsAdmin();
+      setPosts(fetched);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    async function loadPosts() {
-      try {
-        const fetched = await postService.getAllPostsAdmin();
-        setPosts(fetched);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadPosts();
   }, []);
+
+  const importFromBlogger = async () => {
+    const bloggerUrl = 'https://mizatblogger.blogspot.com/feeds/posts/default?alt=json';
+    setImporting(true);
+    const toastId = toast.loading('Fetching posts from Blogger...');
+
+    try {
+      const response = await fetch(bloggerUrl);
+      if (!response.ok) throw new Error('Failed to fetch from Blogger');
+      
+      const data = await response.json();
+      const entries = data.feed.entry || [];
+
+      if (entries.length === 0) {
+        toast.error('No posts found on Blogger.', { id: toastId });
+        return;
+      }
+
+      toast.loading(`Found ${entries.length} posts. Importing...`, { id: toastId });
+
+      let importedCount = 0;
+      for (const entry of entries) {
+        const title = entry.title.$t;
+        const slug = slugify(title);
+        
+        // Check if post already exists in current list
+        const isExisting = posts.some(p => p.slug === slug);
+        if (isExisting) continue;
+
+        const content = entry.content.$t;
+        const excerpt = content.replace(/<[^>]*>/g, '').slice(0, 160) + '...';
+        
+        const authorName = user?.user_metadata?.full_name || user?.email || 'Mizat';
+        
+        try {
+          await postService.createPost({
+            title,
+            slug,
+            excerpt,
+            content,
+            category: 'Life',
+            authorId: user?.id,
+            authorName,
+            status: 'published',
+            publishedAt: new Date().toISOString()
+          });
+          importedCount++;
+        } catch (err) {
+          console.error(`Failed to import post: ${title}`, err);
+        }
+      }
+
+      if (importedCount > 0) {
+        toast.success(`Successfully imported ${importedCount} posts!`, { id: toastId });
+        await loadPosts();
+      } else {
+        toast.success('All posts were already present.', { id: toastId });
+      }
+    } catch (err: any) {
+      console.error('Import error:', err);
+      toast.error(`Import failed: ${err.message || 'Unknown error'}`, { id: toastId });
+    } finally {
+      setImporting(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-3xl border border-black/5 overflow-hidden">
       <div className="p-8 border-b border-black/5 flex items-center justify-between bg-[#FBFBFB]">
          <h3 className="font-serif text-xl font-medium">Content Inventory</h3>
-         <div className="flex items-center space-x-4">
+         <div className="flex items-center space-x-3">
+            <button 
+              onClick={importFromBlogger}
+              disabled={importing}
+              className="flex items-center space-x-2 px-5 py-2.5 bg-black/5 hover:bg-black/10 border border-black/10 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all outline-none"
+            >
+              <DownloadCloud size={14} className={importing ? "animate-pulse" : ""} />
+              <span>{importing ? 'Importing...' : 'Import Blogger'}</span>
+            </button>
             <div className="relative">
                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" />
                <input type="text" placeholder="Search stories..." className="pl-10 pr-6 py-2 bg-black/5 border-none rounded-full text-sm focus:ring-1 focus:ring-black transition-all" />
             </div>
-            <Link to="/admin/create" className="bg-black text-white px-6 py-2 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-black/80 transition-all flex items-center space-x-2">
+            <Link to="/admin/create" className="bg-black text-white px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black/80 transition-all flex items-center space-x-2">
                <Plus size={16} />
                <span>Create</span>
             </Link>
