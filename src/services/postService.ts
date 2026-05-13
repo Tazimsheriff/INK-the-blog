@@ -129,8 +129,12 @@ export const postService = {
     if (post.category) dbPost.category = post.category;
     if (post.tags) dbPost.tags = post.tags;
     if (post.status) dbPost.status = post.status;
+    if (post.publishedAt) {
+      dbPost.published_at = typeof post.publishedAt === 'string' 
+        ? post.publishedAt 
+        : post.publishedAt.toISOString();
+    }
     
-    // Explicitly handle updates
     dbPost.updated_at = new Date().toISOString();
     
     return dbPost;
