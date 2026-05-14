@@ -119,16 +119,19 @@ export const postService = {
 
   toDBPost(post: Partial<Post>) {
     const dbPost: any = {};
-    if (post.title) dbPost.title = post.title;
-    if (post.slug) dbPost.slug = post.slug;
-    if (post.content) dbPost.content = post.content;
-    if (post.excerpt) dbPost.excerpt = post.excerpt;
-    if (post.coverImage) dbPost.cover_image = post.coverImage;
-    if (post.authorId) dbPost.author_id = post.authorId;
-    if (post.authorName) dbPost.author_name = post.authorName;
-    if (post.category) dbPost.category = post.category;
-    if (post.tags) dbPost.tags = post.tags;
-    if (post.status) dbPost.status = post.status;
+    if (post.title !== undefined) dbPost.title = post.title;
+    if (post.slug !== undefined) dbPost.slug = post.slug;
+    if (post.content !== undefined) dbPost.content = post.content;
+    if (post.excerpt !== undefined) dbPost.excerpt = post.excerpt;
+    if (post.coverImage !== undefined) dbPost.cover_image = post.coverImage;
+    if (post.authorId !== undefined) dbPost.author_id = post.authorId;
+    if (post.authorName !== undefined) dbPost.author_name = post.authorName;
+    if (post.category !== undefined) dbPost.category = post.category;
+    if (post.tags !== undefined) dbPost.tags = post.tags;
+    if (post.status !== undefined) dbPost.status = post.status;
+    if (post.viewCount !== undefined) dbPost.view_count = post.viewCount;
+    if (post.likeCount !== undefined) dbPost.like_count = post.likeCount;
+    
     if (post.publishedAt) {
       dbPost.published_at = typeof post.publishedAt === 'string' 
         ? post.publishedAt 

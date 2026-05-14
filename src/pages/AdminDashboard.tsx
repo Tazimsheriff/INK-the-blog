@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { 
   LayoutDashboard, FileText, Image as ImageIcon, MessageSquare, 
   Settings, TrendingUp, Users, LogOut, ChevronRight, Plus, 
-  Search, Bell, MoreVertical, ExternalLink, PenTool
+  Search, Bell, MoreVertical, ExternalLink, PenTool, Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { cn, formatDate, slugify } from '../lib/utils';
@@ -166,6 +166,13 @@ const AllPosts = () => {
         const bloggerCategories = entry.category?.map((c: any) => c.term) || [];
         const category = bloggerCategories[0] || 'Lifestyle';
         
+        // Try to extract an image from the content if Blogger doesn't provide a thumbnail link
+        let coverImage = '';
+        const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+        if (imgMatch && imgMatch[1]) {
+          coverImage = imgMatch[1];
+        }
+
         try {
           await postService.createPost({
             title,
@@ -173,6 +180,7 @@ const AllPosts = () => {
             excerpt,
             content,
             category,
+            coverImage, // Now extracting image
             authorId: user?.id,
             authorName,
             status: 'published',
@@ -405,6 +413,7 @@ export default function AdminDashboard() {
             <Route path="posts" element={<AllPosts />} />
             <Route path="wallpapers" element={<WallpaperManager />} />
             <Route path="create" element={<BlogEditor />} />
+            <Route path="edit/:id" element={<BlogEditor />} />
             <Route path="drafts" element={<ComingSoon title="Archive & Drafts" />} />
             <Route path="comments" element={<ComingSoon title="Comment Moderation" />} />
             <Route path="settings" element={<ComingSoon title="Editorial Settings" />} />

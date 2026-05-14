@@ -20,6 +20,10 @@
   @apply backdrop-blur-md bg-white/70 border border-black/5;
 }
 
+.typography-post img {
+  @apply rounded-3xl w-full my-12 shadow-2xl shadow-black/5 block object-cover max-h-[600px];
+}
+
 .typography-post {
   @apply font-serif text-xl leading-relaxed text-primary/90;
 }

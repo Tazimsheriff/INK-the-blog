@@ -53,12 +53,13 @@ async function startServer() {
     });
     app.use(vite.middlewares);
 
-    // Fallback for development mode to serve index.html
+    // Serve index.html as fallback for any unknown routes (SPA fallback)
     app.get("*", async (req, res, next) => {
       const url = req.originalUrl;
       try {
         const fs = await import("fs/promises");
-        let template = await fs.readFile(path.resolve(__dirname, "index.html"), "utf-8");
+        const indexPath = path.resolve(process.cwd(), "index.html");
+        let template = await fs.readFile(indexPath, "utf-8");
         template = await vite.transformIndexHtml(url, template);
         res.status(200).set({ "Content-Type": "text/html" }).end(template);
       } catch (e) {

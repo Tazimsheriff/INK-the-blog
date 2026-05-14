@@ -6,7 +6,7 @@ export const wallpaperService = {
     const { data, error } = await supabase
       .from('wallpapers')
       .select('*')
-      .order('createdAt', { ascending: false });
+      .order('created_at', { ascending: false });
     
     if (error) throw error;
     return (data || []).map(w => this.mapWallpaper(w));
@@ -48,9 +48,10 @@ export const wallpaperService = {
     return {
       title: data.title,
       url: data.url,
-      thumbnail_url: data.thumbnailUrl,
+      thumbnail_url: data.thumbnailUrl || data.url,
       category: data.category,
       author_id: data.authorId,
+      created_at: data.createdAt || new Date().toISOString()
     };
   }
 };

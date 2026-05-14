@@ -13,11 +13,11 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { postService } from '../services/postService';
 import { wallpaperService } from '../services/wallpaperService';
-import { Wallpaper } from '../types';
+import { Wallpaper, Post } from '../types';
 import { slugify, estimateReadTime } from '../lib/utils';
 import { cn } from '../lib/utils';
 
@@ -26,26 +26,18 @@ const lowlight = createLowlight(common);
 export function BlogEditor() {
   const { user } = useAppStore();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  
   const [title, setTitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [category, setCategory] = useState('Lifestyle');
   const [coverImage, setCoverImage] = useState('');
+  const [status, setStatus] = useState<'draft' | 'published'>('published');
   const [isPublishing, setIsPublishing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
   const [activeTab, setActiveTab] = useState<'settings' | 'wallpapers'>('settings');
-
-  useEffect(() => {
-    async function loadWallpapers() {
-      try {
-        const data = await wallpaperService.getAllWallpapers();
-        setWallpapers(data);
-      } catch (err) {
-        console.error("Failed to load wallpapers", err);
-      }
-    }
-    loadWallpapers();
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -62,13 +54,45 @@ export function BlogEditor() {
     },
   });
 
+  useEffect(() => {
+    async function loadData() {
+      try {
+        setIsLoading(true);
+        // Load wallpapers
+        const wData = await wallpaperService.getAllWallpapers();
+        setWallpapers(wData);
+
+        // Load existing post if editing
+        if (id && id !== 'create') {
+          const allPosts = await postService.getAllPostsAdmin();
+          const existingPost = allPosts.find(p => p.id === id);
+          if (existingPost) {
+            setTitle(existingPost.title);
+            setExcerpt(existingPost.excerpt);
+            setCategory(existingPost.category);
+            setCoverImage(existingPost.coverImage || '');
+            setStatus(existingPost.status);
+            editor?.commands.setContent(existingPost.content);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load data", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, [id, editor]);
+
   const handlePublish = async () => {
     if (!title || !editor) return toast.error('Please add a title and content');
     
     setIsPublishing(true);
+    const toastId = toast.loading(id ? 'Updating thought...' : 'Publishing thought...');
+    
     try {
       const slug = slugify(title);
-      await postService.createPost({
+      const postData = {
         title,
         slug,
         excerpt: excerpt || editor.getText().slice(0, 160) + '...',
@@ -77,13 +101,20 @@ export function BlogEditor() {
         category,
         authorId: user?.id,
         authorName: user?.user_metadata?.full_name || user?.email || 'Author',
-        status: 'published',
-      });
-      toast.success('Thought published to the world');
+        status,
+      };
+
+      if (id && id !== 'create') {
+        await postService.updatePost(id, postData);
+        toast.success('Thought updated', { id: toastId });
+      } else {
+        await postService.createPost(postData);
+        toast.success('Thought published to the world', { id: toastId });
+      }
       navigate('/admin/posts');
     } catch (err) {
       console.error(err);
-      toast.error('Failed to publish');
+      toast.error('Operation failed', { id: toastId });
     } finally {
       setIsPublishing(false);
     }
