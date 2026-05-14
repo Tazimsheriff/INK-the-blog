@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Post } from '../types';
-import { formatDate, estimateReadTime } from '../lib/utils';
+import { formatDate, estimateReadTime, extractFirstImage } from '../lib/utils';
 import { Clock, Heart, MessageCircle, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'react-hot-toast';
@@ -22,7 +22,7 @@ export function PostCard({ post, variant = 'small' }: PostCardProps) {
       >
         <Link to={`/blog/${post.slug}`} className="relative h-[400px] overflow-hidden bg-gray-100 rounded-2xl">
           <img 
-            src={post.coverImage || '/placeholder.jpg'} 
+            src={post.coverImage || extractFirstImage(post.content) || '/placeholder.jpg'} 
             alt={post.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
@@ -76,7 +76,7 @@ export function PostCard({ post, variant = 'small' }: PostCardProps) {
     >
       <Link to={`/blog/${post.slug}`} className="relative h-64 overflow-hidden bg-gray-100 rounded-xl mb-6">
         <img 
-          src={post.coverImage || '/placeholder.jpg'} 
+          src={post.coverImage || extractFirstImage(post.content) || '/placeholder.jpg'} 
           alt={post.title}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
         />

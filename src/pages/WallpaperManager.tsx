@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { wallpaperService } from '../services/wallpaperService';
+import { storageService } from '../services/storageService';
 import { Wallpaper } from '../types';
 import { toast } from 'react-hot-toast';
-import { Plus, X, Image as ImageIcon, Trash2, ExternalLink } from 'lucide-react';
+import { Plus, X, Image as ImageIcon, Trash2, ExternalLink, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { useAppStore } from '../store/useAppStore';
@@ -16,6 +17,7 @@ export const WallpaperManager = () => {
     url: '',
     category: 'Minimal'
   });
+  const [isUploading, setIsUploading] = useState(false);
   const { user } = useAppStore();
 
   const loadWallpapers = async () => {
@@ -34,6 +36,24 @@ export const WallpaperManager = () => {
   useEffect(() => {
     loadWallpapers();
   }, []);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const toastId = toast.loading('Uploading wallpaper...');
+    try {
+      const url = await storageService.uploadImage(file, 'wallpapers');
+      setNewWallpaper(prev => ({ ...prev, url }));
+      toast.success('Uploaded successfully!', { id: toastId });
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Upload failed', { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -115,15 +135,35 @@ export const WallpaperManager = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black uppercase tracking-widest text-black/40 mb-2">Image URL</label>
-                  <input 
-                    type="url"
-                    required
-                    value={newWallpaper.url}
-                    onChange={e => setNewWallpaper(prev => ({ ...prev, url: e.target.value }))}
-                    placeholder="https://images.unsplash.com/..."
-                    className="w-full bg-black/[0.02] border-none rounded-2xl px-6 py-4 text-sm focus:ring-1 focus:ring-black transition-all"
-                  />
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-black/40 mb-2">Wallpaper Image</label>
+                  <div className="space-y-4">
+                    <div className="flex space-x-2">
+                       <input 
+                        type="url"
+                        value={newWallpaper.url}
+                        onChange={e => setNewWallpaper(prev => ({ ...prev, url: e.target.value }))}
+                        placeholder="Image URL or upload below..."
+                        className="flex-1 bg-black/[0.02] border-none rounded-2xl px-6 py-4 text-sm focus:ring-1 focus:ring-black transition-all"
+                      />
+                      <label className="cursor-pointer bg-black text-white px-6 rounded-2xl hover:bg-black/80 transition-all flex items-center justify-center min-w-[60px]">
+                        <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} disabled={isUploading} />
+                        <Upload size={18} className={cn(isUploading && "animate-pulse")} />
+                      </label>
+                    </div>
+
+                    {newWallpaper.url && (
+                      <div className="relative group rounded-2xl overflow-hidden aspect-[16/9] border border-black/5 bg-black/5">
+                        <img src={newWallpaper.url} className="w-full h-full object-cover" />
+                        <button 
+                          type="button"
+                          onClick={() => setNewWallpaper(prev => ({ ...prev, url: '' }))}
+                          className="absolute top-4 right-4 p-2 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="block text-[10px] font-black uppercase tracking-widest text-black/40 mb-2">Category</label>

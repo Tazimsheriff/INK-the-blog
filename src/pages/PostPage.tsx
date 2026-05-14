@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Post } from '../types';
 import { Navbar, Footer } from '../components/Navigation';
-import { formatDate, estimateReadTime } from '../lib/utils';
+import { formatDate, estimateReadTime, extractFirstImage } from '../lib/utils';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { Heart, MessageCircle, Share2, Bookmark, Twitter, Linkedin, Link as LinkIcon, ChevronRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -178,7 +178,7 @@ export default function PostPage() {
         <div className="max-w-6xl mx-auto px-4 mb-20">
           <div className="aspect-[21/9] overflow-hidden rounded-3xl bg-gray-100 shadow-2xl shadow-black/5">
             <img 
-              src={post.coverImage} 
+              src={post.coverImage || extractFirstImage(post.content) || ''} 
               alt={post.title} 
               className="w-full h-full object-cover"
             />

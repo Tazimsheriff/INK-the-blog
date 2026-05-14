@@ -17,8 +17,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
 import { postService } from '../services/postService';
 import { wallpaperService } from '../services/wallpaperService';
+import { storageService } from '../services/storageService';
 import { Wallpaper, Post } from '../types';
 import { slugify, estimateReadTime } from '../lib/utils';
+import { Upload, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const lowlight = createLowlight(common);
@@ -38,6 +40,7 @@ export function BlogEditor() {
   const [wallpapers, setWallpapers] = useState<Wallpaper[]>([]);
   const [activeTab, setActiveTab] = useState<'settings' | 'wallpapers'>('settings');
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -68,11 +71,15 @@ export function BlogEditor() {
           const existingPost = allPosts.find(p => p.id === id);
           if (existingPost) {
             setTitle(existingPost.title);
-            setExcerpt(existingPost.excerpt);
-            setCategory(existingPost.category);
+            setExcerpt(existingPost.excerpt || '');
+            setCategory(existingPost.category || 'Lifestyle');
             setCoverImage(existingPost.coverImage || '');
-            setStatus(existingPost.status);
-            editor?.commands.setContent(existingPost.content);
+            setStatus(existingPost.status || 'published');
+            
+            // Set editor content with a small delay to ensure it's ready
+            if (editor) {
+              editor.commands.setContent(existingPost.content);
+            }
           }
         }
       } catch (err) {
@@ -120,9 +127,45 @@ export function BlogEditor() {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const toastId = toast.loading('Uploading image...');
+    try {
+      const url = await storageService.uploadImage(file, 'posts');
+      editor?.chain().focus().setImage({ src: url }).run();
+      toast.success('Image uploaded', { id: toastId });
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Upload failed', { id: toastId });
+    }
+  };
+
+  const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const toastId = toast.loading('Uploading cover...');
+    try {
+      const url = await storageService.uploadImage(file, 'posts');
+      setCoverImage(url);
+      toast.success('Cover uploaded', { id: toastId });
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || 'Upload failed', { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const addImage = () => {
-    const url = window.prompt('URL');
-    if (url) editor?.chain().focus().setImage({ src: url }).run();
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: any) => handleImageUpload(e);
+    input.click();
   };
 
   if (!editor) return null;
@@ -220,25 +263,45 @@ export function BlogEditor() {
                 <div className="bg-white p-8 rounded-3xl border border-black/5 space-y-6">
                   <h4 className="font-serif text-xl font-medium mb-6">Meta Details</h4>
                   
-                  <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Cover Image</label>
-                        <button 
-                          onClick={() => setActiveTab('wallpapers')}
-                          className="text-[9px] font-bold uppercase tracking-widest text-accent hover:underline"
-                        >
-                          Select from Wallpapers
-                        </button>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Cover Image</label>
+                          <button 
+                            onClick={() => setActiveTab('wallpapers')}
+                            className="text-[9px] font-bold uppercase tracking-widest text-accent hover:underline"
+                          >
+                            Select from Gallery
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div className="flex space-x-2">
+                            <input 
+                              type="text" 
+                              value={coverImage}
+                              onChange={(e) => setCoverImage(e.target.value)}
+                              placeholder="Image URL..."
+                              className="flex-1 bg-black/5 border-none rounded-2xl py-3 px-4 text-xs"
+                            />
+                            <label className="cursor-pointer bg-black text-white p-3 rounded-2xl hover:bg-black/80 transition-all flex items-center justify-center min-w-[48px]">
+                              <input type="file" className="hidden" accept="image/*" onChange={handleCoverUpload} disabled={isUploading} />
+                              <Upload size={16} className={cn(isUploading && "animate-pulse")} />
+                            </label>
+                          </div>
+                          
+                          {coverImage && (
+                            <div className="relative group">
+                              <img src={coverImage} className="w-full h-32 object-cover rounded-2xl shadow-sm border border-black/5" />
+                              <button 
+                                onClick={() => setCoverImage('')}
+                                className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      <input 
-                        type="text" 
-                        value={coverImage}
-                        onChange={(e) => setCoverImage(e.target.value)}
-                        placeholder="https://..."
-                        className="w-full bg-black/5 border-none rounded-2xl py-3 px-4 text-xs"
-                      />
-                      {coverImage && <img src={coverImage} className="w-full h-32 object-cover rounded-xl mt-2 shadow-sm" />}
-                  </div>
 
                   <div className="space-y-4">
                       <label className="text-[10px] font-bold uppercase tracking-widest text-black/40">Category</label>

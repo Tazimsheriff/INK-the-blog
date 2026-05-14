@@ -8,7 +8,7 @@ import {
   Search, Bell, MoreVertical, ExternalLink, PenTool, Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn, formatDate, slugify } from '../lib/utils';
+import { cn, formatDate, slugify, extractFirstImage } from '../lib/utils';
 import { BlogEditor } from './BlogEditor';
 import { WallpaperManager } from './WallpaperManager';
 import { postService } from '../services/postService';
@@ -96,6 +96,7 @@ const Overview = () => {
 };
 
 const AllPosts = () => {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
@@ -302,9 +303,13 @@ const AllPosts = () => {
               <tr key={post.id} className="hover:bg-black/[0.01] transition-colors group">
                  <td className="py-6 px-8">
                     <div className="flex items-center space-x-4">
-                       <div className="w-12 h-12 bg-black/5 rounded-lg overflow-hidden flex-shrink-0">
-                         {post.coverImage && <img src={post.coverImage} alt="" className="w-full h-full object-cover" />}
-                       </div>
+                        <div className="w-12 h-12 bg-black/5 rounded-lg overflow-hidden flex-shrink-0">
+                          <img 
+                            src={post.coverImage || extractFirstImage(post.content) || `https://ui-avatars.com/api/?name=${post.title}&background=random`} 
+                            alt="" 
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
                        <div>
                           <Link to={`/blog/${post.slug}`} className="block font-medium mb-1 hover:underline">{post.title}</Link>
                           <span className="block text-[10px] text-black/30 font-bold uppercase tracking-widest">By {post.authorName}</span>

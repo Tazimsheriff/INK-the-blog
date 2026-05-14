@@ -31,3 +31,9 @@ export function estimateReadTime(content: string) {
   const minutes = Math.ceil(words / wordsPerMinute);
   return minutes;
 }
+
+export function extractFirstImage(content: string): string | null {
+  if (!content) return null;
+  const match = content.match(/<img[^>]+src="([^">]+)"/);
+  return match ? match[1] : null;
+}
