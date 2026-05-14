@@ -99,6 +99,7 @@ const AllPosts = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+  const [repairing, setRepairing] = useState(false);
   const [bloggerUrl, setBloggerUrl] = useState('https://mizatblogger.blogspot.com/');
   const { user } = useAppStore();
 
@@ -111,6 +112,37 @@ const AllPosts = () => {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const repairThumbnails = async () => {
+    setRepairing(true);
+    const toastId = toast.loading('Scanning thoughts for missing images...');
+    let fixedCount = 0;
+
+    try {
+      const postsToProcess = posts.filter(p => !p.coverImage || p.coverImage.trim() === '');
+      
+      if (postsToProcess.length === 0) {
+         toast.success('All thoughts already have thumbnails!', { id: toastId });
+         return;
+      }
+
+      for (const post of postsToProcess) {
+        const imgMatch = post.content.match(/<img[^>]+src="([^">]+)"/);
+        if (imgMatch && imgMatch[1]) {
+          await postService.updatePost(post.id, { coverImage: imgMatch[1] });
+          fixedCount++;
+        }
+      }
+
+      toast.success(`Recovered ${fixedCount} thumbnails!`, { id: toastId });
+      if (fixedCount > 0) await loadPosts();
+    } catch (err) {
+      console.error('Repair failed:', err);
+      toast.error('Thumbnail recovery failed', { id: toastId });
+    } finally {
+      setRepairing(false);
     }
   };
 
@@ -216,6 +248,14 @@ const AllPosts = () => {
                   <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-black/20" />
                   <input type="text" placeholder="Search stories..." className="pl-10 pr-6 py-2 bg-black/5 border-none rounded-full text-sm focus:ring-1 focus:ring-black transition-all" />
                </div>
+               <button 
+                 onClick={repairThumbnails}
+                 disabled={repairing}
+                 className="bg-black/5 text-black/40 px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black/10 transition-all flex items-center space-x-2"
+               >
+                 <ImageIcon size={16} />
+                 <span>{repairing ? 'Repairing...' : 'Repair Thumbnails'}</span>
+               </button>
                <Link to="/admin/create" className="bg-black text-white px-6 py-2.5 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-black/80 transition-all flex items-center space-x-2">
                   <Plus size={16} />
                   <span>Create</span>
@@ -286,9 +326,29 @@ const AllPosts = () => {
                     {formatDate(post.createdAt)}
                  </td>
                  <td className="py-6 px-8 text-right">
-                    <button className="p-2 hover:bg-black/5 rounded-lg text-black/20 hover:text-black transition-colors">
-                       <MoreVertical size={18} />
-                    </button>
+                    <div className="flex items-center justify-end space-x-2">
+                      <button 
+                        onClick={() => navigate(`/admin/edit/${post.id}`)}
+                        className="p-2 hover:bg-black/5 rounded-lg text-black/20 hover:text-black transition-colors"
+                        title="Edit Story"
+                      >
+                         <PenTool size={18} />
+                      </button>
+                      <button 
+                        onClick={() => {
+                          if (confirm('Delete this story?')) {
+                            postService.deletePost(post.id).then(() => {
+                              toast.success('Story deleted');
+                              loadPosts();
+                            });
+                          }
+                        }}
+                        className="p-2 hover:bg-red-50 rounded-lg text-black/20 hover:text-red-500 transition-colors"
+                        title="Delete Story"
+                      >
+                         <Trash2 size={18} />
+                      </button>
+                    </div>
                  </td>
               </tr>
             ))}
