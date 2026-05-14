@@ -177,11 +177,13 @@ export default function PostPage() {
         {/* Hero Image */}
         <div className="max-w-6xl mx-auto px-4 mb-20">
           <div className="aspect-[21/9] overflow-hidden rounded-3xl bg-gray-100 shadow-2xl shadow-black/5">
-            <img 
-              src={post.coverImage || extractFirstImage(post.content) || ''} 
-              alt={post.title} 
-              className="w-full h-full object-cover"
-            />
+            { (post.coverImage || extractFirstImage(post.content)) && (
+              <img 
+                src={post.coverImage || extractFirstImage(post.content) || undefined} 
+                alt={post.title} 
+                className="w-full h-full object-cover"
+              />
+            )}
           </div>
         </div>
 

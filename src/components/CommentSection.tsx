@@ -144,7 +144,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full overflow-hidden border border-black/5">
-                        <img src={comment.userAvatar} alt={comment.userName} className="w-full h-full object-cover" />
+                        <img 
+                          src={comment.userAvatar || `https://ui-avatars.com/api/?name=${comment.userName}&background=random`} 
+                          alt={comment.userName} 
+                          className="w-full h-full object-cover" 
+                        />
                       </div>
                       <div>
                         <span className="block text-sm font-bold text-primary">{comment.userName}</span>

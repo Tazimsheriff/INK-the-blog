@@ -291,7 +291,7 @@ export function BlogEditor() {
                           
                           {coverImage && (
                             <div className="relative group">
-                              <img src={coverImage} className="w-full h-32 object-cover rounded-2xl shadow-sm border border-black/5" />
+                              <img src={coverImage || undefined} className="w-full h-32 object-cover rounded-2xl shadow-sm border border-black/5" />
                               <button 
                                 onClick={() => setCoverImage('')}
                                 className="absolute top-2 right-2 p-1.5 bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm"
@@ -346,7 +346,7 @@ export function BlogEditor() {
                     {wallpapers.map(w => (
                       <div key={w.id} className="group relative">
                         <img 
-                          src={w.url} 
+                          src={w.url || undefined} 
                           alt={w.title} 
                           className="w-full aspect-square object-cover rounded-xl border border-black/5"
                         />

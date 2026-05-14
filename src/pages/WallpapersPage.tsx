@@ -120,7 +120,7 @@ export default function WallpapersPage() {
                   >
                     <div className="aspect-[4/5] bg-black/5 rounded-3xl overflow-hidden mb-6 relative">
                       <img 
-                        src={wallpaper.url} 
+                        src={wallpaper.url || undefined} 
                         alt={wallpaper.title}
                         className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                       />

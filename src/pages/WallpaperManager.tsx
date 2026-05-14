@@ -153,7 +153,7 @@ export const WallpaperManager = () => {
 
                     {newWallpaper.url && (
                       <div className="relative group rounded-2xl overflow-hidden aspect-[16/9] border border-black/5 bg-black/5">
-                        <img src={newWallpaper.url} className="w-full h-full object-cover" />
+                        <img src={newWallpaper.url || undefined} className="w-full h-full object-cover" />
                         <button 
                           type="button"
                           onClick={() => setNewWallpaper(prev => ({ ...prev, url: '' }))}
@@ -212,7 +212,7 @@ export const WallpaperManager = () => {
           >
             <div className="aspect-[4/5] overflow-hidden bg-black/5">
               <img 
-                src={w.url} 
+                src={w.url || undefined} 
                 alt={w.title} 
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
               />
