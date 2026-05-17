@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Post } from '../types';
 import { Navbar, Footer } from '../components/Navigation';
-import { formatDate, estimateReadTime, extractFirstImage } from '../lib/utils';
+import { formatDate, estimateReadTime, extractFirstImage, cleanText } from '../lib/utils';
 import { motion, useScroll, useSpring } from 'motion/react';
 import { Heart, MessageCircle, Share2, Bookmark, Twitter, Linkedin, Link as LinkIcon, ChevronRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -134,11 +134,11 @@ export default function PostPage() {
           </div>
           
           <h1 className="text-5xl md:text-[84px] font-serif font-black mb-12 leading-[0.9] tracking-tight">
-            {post.title}
+            {cleanText(post.title)}
           </h1>
 
           <p className="text-2xl md:text-3xl text-black/60 font-serif mb-16 leading-relaxed italic">
-            {post.excerpt}
+            {cleanText(post.excerpt)}
           </p>
 
           <div className="flex items-center justify-between py-8 border-t border-black/5">
@@ -228,7 +228,7 @@ export default function PostPage() {
           <div className="lg:col-span-7 lg:col-start-4">
              <div 
                className="typography-post"
-               dangerouslySetInnerHTML={{ __html: post.content }}
+               dangerouslySetInnerHTML={{ __html: post.content.replace(/&nbsp;/g, ' ') }}
              />
 
              {/* Tags and Engagement */}

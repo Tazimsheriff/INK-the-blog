@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Post } from '../types';
-import { formatDate, estimateReadTime, extractFirstImage } from '../lib/utils';
+import { formatDate, estimateReadTime, extractFirstImage, cleanText } from '../lib/utils';
 import { Clock, Heart, MessageCircle, ExternalLink } from 'lucide-react';
 import { motion } from 'motion/react';
 import { toast } from 'react-hot-toast';
@@ -34,10 +34,10 @@ export function PostCard({ post, variant = 'small' }: PostCardProps) {
             <span className="text-black/60">{post.category}</span>
           </div>
           <Link to={`/blog/${post.slug}`} className="group-hover:opacity-70 transition-opacity">
-            <h2 className="font-serif text-5xl lg:text-7xl font-black mb-6 leading-[0.95] tracking-tight">{post.title}</h2>
+            <h2 className="font-serif text-5xl lg:text-7xl font-black mb-6 leading-[0.95] tracking-tight">{cleanText(post.title)}</h2>
           </Link>
           <p className="text-black/60 font-serif text-xl mb-8 line-clamp-3 leading-relaxed">
-            {post.excerpt}
+            {cleanText(post.excerpt)}
           </p>
           <div className="flex items-center space-x-4 mb-8">
             <div className="w-10 h-10 rounded-full bg-[#E5E7EB] border border-black/5 overflow-hidden">
@@ -60,7 +60,7 @@ export function PostCard({ post, variant = 'small' }: PostCardProps) {
           {post.id.slice(-2)}
         </span>
         <div>
-          <h4 className="text-sm font-bold leading-tight mb-1 group-hover:underline transition-all">{post.title}</h4>
+          <h4 className="text-sm font-bold leading-tight mb-1 group-hover:underline transition-all">{cleanText(post.title)}</h4>
           <p className="text-[10px] text-black/40 uppercase font-bold tracking-[0.15em]">{estimateReadTime(post.content)} min read • {post.category}</p>
         </div>
       </Link>
@@ -87,10 +87,10 @@ export function PostCard({ post, variant = 'small' }: PostCardProps) {
         <span>{estimateReadTime(post.content)} min read</span>
       </div>
       <Link to={`/blog/${post.slug}`} className="group-hover:opacity-70 transition-opacity">
-        <h3 className="font-serif text-2xl font-black mb-4 leading-tight text-primary">{post.title}</h3>
+        <h3 className="font-serif text-2xl font-black mb-4 leading-tight text-primary">{cleanText(post.title)}</h3>
       </Link>
       <p className="text-black/60 font-serif text-base mb-6 line-clamp-2 leading-relaxed">
-        {post.excerpt}
+        {cleanText(post.excerpt)}
       </p>
       <div className="mt-auto flex items-center justify-between pt-4">
         <span className="text-xs text-black/40">{formatDate(post.createdAt)}</span>

@@ -37,3 +37,8 @@ export function extractFirstImage(content: string): string | null {
   const match = content.match(/<img[^>]+src="([^">]+)"/);
   return match ? match[1] : null;
 }
+
+export function cleanText(text: string): string {
+  if (!text) return "";
+  return text.replace(/&nbsp;/g, ' ');
+}

@@ -8,7 +8,7 @@ import {
   Search, Bell, MoreVertical, ExternalLink, PenTool, Trash2
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { cn, formatDate, slugify, extractFirstImage } from '../lib/utils';
+import { cn, formatDate, slugify, extractFirstImage, cleanText } from '../lib/utils';
 import { BlogEditor } from './BlogEditor';
 import { WallpaperManager } from './WallpaperManager';
 import { postService } from '../services/postService';
@@ -311,7 +311,7 @@ const AllPosts = () => {
                           />
                         </div>
                        <div>
-                          <Link to={`/blog/${post.slug}`} className="block font-medium mb-1 hover:underline">{post.title}</Link>
+                          <Link to={`/blog/${post.slug}`} className="block font-medium mb-1 hover:underline">{cleanText(post.title)}</Link>
                           <span className="block text-[10px] text-black/30 font-bold uppercase tracking-widest">By {post.authorName}</span>
                        </div>
                     </div>
